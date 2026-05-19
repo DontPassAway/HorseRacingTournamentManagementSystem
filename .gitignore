@@ -1,0 +1,65 @@
+## ── Build Output ─────────────────────────────────────────────────────────────
+bin/
+obj/
+out/
+
+## ── Visual Studio ────────────────────────────────────────────────────────────
+.vs/
+*.user
+*.suo
+*.userprefs
+*.userosscache
+*.sln.docstates
+*.vcxproj.filters
+
+## ── Visual Studio Code ───────────────────────────────────────────────────────
+.vscode/
+*.code-workspace
+
+## ── JetBrains Rider ──────────────────────────────────────────────────────────
+.idea/
+*.DotSettings.user
+
+## ── NuGet ────────────────────────────────────────────────────────────────────
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## ── ASP.NET Core ─────────────────────────────────────────────────────────────
+# User secrets (never commit!)
+secrets.json
+
+# Published output
+publish/
+wwwroot/dist/
+
+## ── App Settings (keep base configs, ignore environment-specific) ─────────────
+# appsettings.Production.json
+# appsettings.Staging.json
+# appsettings.Local.json
+
+## ── Logs ─────────────────────────────────────────────────────────────────────
+logs/
+*.log
+
+## ── Test Results ─────────────────────────────────────────────────────────────
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+
+## ── OS Generated ─────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+## ── Docker ───────────────────────────────────────────────────────────────────
+# docker-compose.override.yml
+
+## ── Entity Framework ─────────────────────────────────────────────────────────
+# Uncomment below to ignore migrations from source control (not recommended)
+# HorseRacing.Infrastructure/Migrations/

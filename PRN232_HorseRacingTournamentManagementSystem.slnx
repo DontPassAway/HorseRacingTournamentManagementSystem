@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="HorseRacing.API/HorseRacing.API.csproj" />
+  <Project Path="HorseRacing.Application/HorseRacing.Application.csproj" />
+  <Project Path="HorseRacing.Domain/HorseRacing.Domain.csproj" />
+  <Project Path="HorseRacing.Infrastructure/HorseRacing.Infrastructure.csproj" />
+  <Project Path="HorseRacing.Shared/HorseRacing.Shared.csproj" />
+</Solution>
