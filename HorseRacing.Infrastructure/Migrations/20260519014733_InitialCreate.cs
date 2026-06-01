@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -422,7 +422,7 @@ namespace HorseRacing.Infrastructure.Migrations
                         column: x => x.ViolatingRegistrationId,
                         principalTable: "Registrations",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
+                        onDelete: ReferentialAction.NoAction);
                     table.ForeignKey(
                         name: "FK_RefereeReports_Users_RefereeUserId",
                         column: x => x.RefereeUserId,

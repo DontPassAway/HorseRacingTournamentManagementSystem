@@ -25,6 +25,6 @@ public class RefereeReportConfiguration : IEntityTypeConfiguration<RefereeReport
         builder.HasOne(r => r.ViolatingRegistration)
                .WithMany()
                .HasForeignKey(r => r.ViolatingRegistrationId)
-               .OnDelete(DeleteBehavior.SetNull);
+               .OnDelete(DeleteBehavior.NoAction);
     }
 }
