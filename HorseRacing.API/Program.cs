@@ -37,7 +37,7 @@ builder.Services.AddScoped<IJockeyInvitationService, JockeyInvitationService>();
 builder.Services.AddScoped<IRaceAssignmentService, RaceAssignmentService>();
 
 // ── AutoMapper ────────────────────────────────────────────────────────────────
-builder.Services.AddAutoMapper(typeof(MappingProfile));
+builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
 
 // ── JWT Authentication ────────────────────────────────────────────────────────
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");

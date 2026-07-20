@@ -18,6 +18,9 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
+        // Fix: AutoMapper 12 requires DisableConstructorMapping for C# records with positional constructors
+        DisableConstructorMapping();
+
         // User
         CreateMap<User, UserProfileDto>();
 
