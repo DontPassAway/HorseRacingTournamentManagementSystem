@@ -13,19 +13,20 @@ public record RespondInvitationDto(
     string? ResponseMessage
 );
 
-public record JockeyInvitationDto(
-    int Id,
-    int HorseId,
-    string HorseName,
-    int HorseOwnerId,
-    string OwnerName,
-    int JockeyId,
-    string JockeyName,
-    int? RaceId,
-    string? RaceName,
-    JockeyInvitationStatus Status,
-    string? Message,
-    string? ResponseMessage,
-    DateTime InvitedAt,
-    DateTime? RespondedAt
-);
+public class JockeyInvitationDto
+{
+    public int Id { get; set; }
+    public int HorseId { get; set; }
+    public string HorseName { get; set; }
+    public int HorseOwnerId { get; set; }
+    public string OwnerName { get; set; }
+    public int JockeyId { get; set; }
+    public string JockeyName { get; set; }
+    public int? RaceId { get; set; }
+    public string? RaceName { get; set; }
+    public JockeyInvitationStatus Status { get; set; }
+    public string? Message { get; set; }
+    public string? ResponseMessage { get; set; }
+    public DateTime InvitedAt { get; set; }
+    public DateTime? RespondedAt { get; set; }
+}

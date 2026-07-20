@@ -9,17 +9,18 @@ public record CreateBetDto(
     string? Notes
 );
 
-public record BetDto(
-    int Id,
-    int SpectatorUserId,
-    string SpectatorName,
-    int RaceId,
-    string RaceName,
-    int PredictedHorseId,
-    string PredictedHorseName,
-    int PredictedPosition,
-    BetStatus Status,
-    string? Notes,
-    DateTime PlacedAt,
-    DateTime? ResolvedAt
-);
+public class BetDto
+{
+    public int Id { get; set; }
+    public int SpectatorUserId { get; set; }
+    public string SpectatorName { get; set; }
+    public int RaceId { get; set; }
+    public string RaceName { get; set; }
+    public int PredictedHorseId { get; set; }
+    public string PredictedHorseName { get; set; }
+    public int PredictedPosition { get; set; }
+    public BetStatus Status { get; set; }
+    public string? Notes { get; set; }
+    public DateTime PlacedAt { get; set; }
+    public DateTime? ResolvedAt { get; set; }
+}

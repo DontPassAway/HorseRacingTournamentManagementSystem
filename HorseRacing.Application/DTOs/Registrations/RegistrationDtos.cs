@@ -7,23 +7,24 @@ public record CreateRegistrationDto(
     int HorseId
 );
 
-public record RegistrationDto(
-    int Id,
-    int RaceId,
-    string RaceName,
-    int HorseId,
-    string HorseName,
-    int HorseOwnerId,
-    string OwnerName,
-    int? JockeyId,
-    string? JockeyName,
-    int LaneNumber,
-    RegistrationStatus Status,
-    string? RejectionReason,
-    bool JockeyConfirmed,
-    bool OwnerConfirmed,
-    DateTime RegisteredAt
-);
+public class RegistrationDto
+{
+    public int Id { get; set; }
+    public int RaceId { get; set; }
+    public string RaceName { get; set; }
+    public int HorseId { get; set; }
+    public string HorseName { get; set; }
+    public int HorseOwnerId { get; set; }
+    public string OwnerName { get; set; }
+    public int? JockeyId { get; set; }
+    public string? JockeyName { get; set; }
+    public int LaneNumber { get; set; }
+    public RegistrationStatus Status { get; set; }
+    public string? RejectionReason { get; set; }
+    public bool JockeyConfirmed { get; set; }
+    public bool OwnerConfirmed { get; set; }
+    public DateTime RegisteredAt { get; set; }
+}
 
 public record ConfirmJockeyDto(int JockeyId);
 
