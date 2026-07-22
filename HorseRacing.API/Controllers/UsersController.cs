@@ -1,4 +1,4 @@
-using HorseRacing.API.Filters;
+﻿using HorseRacing.API.Filters;
 using HorseRacing.Application.DTOs.Auth;
 using HorseRacing.Application.Interfaces.Services;
 using HorseRacing.Domain.Enums;
@@ -17,10 +17,21 @@ public class UsersController : ControllerBase
 
     [HttpGet]
     public async Task<ActionResult<ApiResponse<PagedResponse<UserProfileDto>>>> GetAll(
-        [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? search = null,
+        [FromQuery] bool? isActive = null)
     {
-        var result = await _userService.GetAllUsersAsync(page, pageSize);
+        var result = await _userService.GetAllUsersAsync(page, pageSize, search, isActive);
         return Ok(ApiResponse<PagedResponse<UserProfileDto>>.Ok(result));
+    }
+
+    // Endpoint mới để trả về thống kê
+    [HttpGet("stats")]
+    public async Task<ActionResult<ApiResponse<UserStatsDto>>> GetStats()
+    {
+        var result = await _userService.GetUserStatsAsync();
+        return Ok(ApiResponse<UserStatsDto>.Ok(result));
     }
 
     [HttpGet("{id:int}")]

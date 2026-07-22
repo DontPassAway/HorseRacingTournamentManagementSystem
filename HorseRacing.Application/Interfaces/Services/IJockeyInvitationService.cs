@@ -10,4 +10,5 @@ public interface IJockeyInvitationService
     Task<PagedResponse<JockeyInvitationDto>> GetSentInvitationsAsync(int ownerUserId, int page, int pageSize);
     Task<JockeyInvitationDto> AcceptInvitationAsync(int invitationId, int jockeyUserId, RespondInvitationDto dto);
     Task<JockeyInvitationDto> DeclineInvitationAsync(int invitationId, int jockeyUserId, RespondInvitationDto dto);
+
 }
