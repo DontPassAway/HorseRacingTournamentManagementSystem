@@ -12,4 +12,8 @@ public interface IRegistrationService
     Task<RegistrationDto> RejectRegistrationAsync(int id, RejectRegistrationDto dto);
     Task<RegistrationDto> ConfirmJockeyAsync(int id, int ownerUserId, ConfirmJockeyDto dto);
     Task WithdrawRegistrationAsync(int id, int ownerUserId);
+
+    Task<PagedResponse<RegistrationDto>> GetMyRidesAsync(int jockeyUserId, int page, int pageSize);
+
+    Task<PagedResponse<RegistrationDto>> GetAllRegistrationsAsync(int page, int pageSize);
 }

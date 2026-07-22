@@ -151,4 +151,29 @@ public class RegistrationService : IRegistrationService
         _repo.Update(reg);
         await _uow.SaveChangesAsync();
     }
+
+    public async Task<PagedResponse<RegistrationDto>> GetMyRidesAsync(int jockeyUserId, int page, int pageSize)
+    {
+        var query = _repo.Query()
+            .Include(r => r.Horse)
+            .Include(r => r.Race)
+            .Include(r => r.Jockey)
+            .Where(r => r.Jockey != null && r.Jockey.UserId == jockeyUserId);
+
+        int total = await query.CountAsync();
+        var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+
+        return new PagedResponse<RegistrationDto>(_mapper.Map<List<RegistrationDto>>(items), page, pageSize, total);
+    }
+
+    public async Task<PagedResponse<RegistrationDto>> GetAllRegistrationsAsync(int page, int pageSize)
+    {
+        var query = _repo.Query(); 
+        int total = await query.CountAsync();
+        var items = await query.OrderByDescending(r => r.RegisteredAt)
+                               .Skip((page - 1) * pageSize)
+                               .Take(pageSize)
+                               .ToListAsync();
+        return new PagedResponse<RegistrationDto>(_mapper.Map<List<RegistrationDto>>(items), page, pageSize, total);
+    }
 }

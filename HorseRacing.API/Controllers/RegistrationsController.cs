@@ -1,4 +1,4 @@
-using HorseRacing.API.Extensions;
+﻿using HorseRacing.API.Extensions;
 using HorseRacing.API.Filters;
 using HorseRacing.Application.DTOs.Registrations;
 using HorseRacing.Application.Interfaces.Services;
@@ -16,6 +16,12 @@ public class RegistrationsController : ControllerBase
 {
     private readonly IRegistrationService _service;
     public RegistrationsController(IRegistrationService service) => _service = service;
+
+    [HttpGet]
+    [AuthorizeRoles(UserRole.Admin, UserRole.Referee)]
+    public async Task<ActionResult<ApiResponse<PagedResponse<RegistrationDto>>>> GetAll(
+        [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        => Ok(ApiResponse<PagedResponse<RegistrationDto>>.Ok(await _service.GetAllRegistrationsAsync(page, pageSize)));
 
     [HttpPost]
     [AuthorizeRoles(UserRole.HorseOwner)]
@@ -58,5 +64,17 @@ public class RegistrationsController : ControllerBase
     {
         await _service.WithdrawRegistrationAsync(id, User.GetUserId());
         return Ok(ApiResponse<object>.Ok(null!, "Withdrawn."));
+    }
+
+    // Trong file HorseRacing.API/Controllers/RegistrationsController.cs
+
+    [HttpGet("my-rides")]
+    [AuthorizeRoles(UserRole.Jockey)]
+    public async Task<ActionResult<ApiResponse<PagedResponse<RegistrationDto>>>> GetMyRides(
+        [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    {
+        // Gọi Service (Bạn cần thêm logic Where(r => r.Jockey.UserId == currentUserId) trong RegistrationService)
+        var result = await _service.GetMyRidesAsync(User.GetUserId(), page, pageSize);
+        return Ok(ApiResponse<PagedResponse<RegistrationDto>>.Ok(result));
     }
 }

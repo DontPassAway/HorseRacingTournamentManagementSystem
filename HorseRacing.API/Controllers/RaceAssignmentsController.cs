@@ -23,7 +23,7 @@ public class RaceAssignmentsController : ControllerBase
         => Ok(ApiResponse<RaceAssignmentDto>.Ok(await _service.AssignRefereeAsync(dto)));
 
     [HttpGet("my-assignments")]
-    [AuthorizeRoles(UserRole.Referee)]
+    [AuthorizeRoles(UserRole.Jockey)]
     public async Task<ActionResult<ApiResponse<PagedResponse<RaceAssignmentDto>>>> GetMy(
         [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         => Ok(ApiResponse<PagedResponse<RaceAssignmentDto>>.Ok(await _service.GetMyAssignmentsAsync(User.GetUserId(), page, pageSize)));

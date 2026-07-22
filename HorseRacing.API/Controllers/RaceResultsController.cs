@@ -33,7 +33,7 @@ public class RaceResultsController : ControllerBase
         => Ok(ApiResponse<RaceResultDto>.Ok(await _service.UpdateResultAsync(id, dto)));
 
     [HttpPut("{id:int}/confirm")]
-    [AuthorizeRoles(UserRole.Admin)]
+    [AuthorizeRoles(UserRole.Admin, UserRole.Referee)]
     public async Task<ActionResult<ApiResponse<RaceResultDto>>> Confirm(int id)
         => Ok(ApiResponse<RaceResultDto>.Ok(await _service.ConfirmResultAsync(id, User.GetUserId())));
 }
