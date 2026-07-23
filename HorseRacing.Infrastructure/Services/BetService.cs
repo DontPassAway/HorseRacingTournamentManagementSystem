@@ -76,6 +76,19 @@ public class BetService : IBetService
         return new PagedResponse<BetDto>(_mapper.Map<List<BetDto>>(items), page, pageSize, total);
     }
 
+    public async Task<PagedResponse<BetDto>> GetAllBetsAsync(int page, int pageSize)
+    {
+        var query = BaseQuery();
+
+        int total = await query.CountAsync();
+        var items = await query.OrderByDescending(b => b.Id) 
+                               .Skip((page - 1) * pageSize)
+                               .Take(pageSize)
+                               .ToListAsync();
+
+        return new PagedResponse<BetDto>(_mapper.Map<List<BetDto>>(items), page, pageSize, total);
+    }
+
     public async Task ResolveBetsForRaceAsync(int raceId)
     {
         var bets = await _repo.FindAsync(b => b.RaceId == raceId && b.Status == BetStatus.Pending);

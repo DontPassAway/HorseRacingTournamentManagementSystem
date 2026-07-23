@@ -62,11 +62,44 @@ public class HorseService : IHorseService
         return _mapper.Map<HorseDto>(horse);
     }
 
-    public async Task<PagedResponse<HorseDto>> GetAllHorsesAsync(int page, int pageSize)
+    // Đã nâng cấp hàm này để nhận và xử lý search/status
+    public async Task<PagedResponse<HorseDto>> GetAllHorsesAsync(int page, int pageSize, string? search = null, string? status = null)
     {
-        var query = _horseRepo.Query().Include(h => h.HorseOwner).ThenInclude(o => o.User);
+        var query = _horseRepo.Query()
+            .Include(h => h.HorseOwner)
+            .ThenInclude(o => o.User)
+            .AsQueryable();
+
+        // 1. Xử lý Lọc theo trạng thái (Status)
+        if (!string.IsNullOrWhiteSpace(status) && status.ToLower() != "all")
+        {
+            if (Enum.TryParse<HorseStatus>(status, true, out var parsedStatus))
+            {
+                query = query.Where(h => h.Status == parsedStatus);
+            }
+        }
+
+        // 2. Xử lý Tìm kiếm (Search) theo tên ngựa hoặc tên/username chủ ngựa
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var lowerSearch = search.ToLower();
+            query = query.Where(h =>
+                h.Name.ToLower().Contains(lowerSearch) ||
+                (h.HorseOwner != null && h.HorseOwner.User != null &&
+                    (h.HorseOwner.User.FullName.ToLower().Contains(lowerSearch) ||
+                     h.HorseOwner.User.Username.ToLower().Contains(lowerSearch)))
+            );
+        }
+
         int total = await query.CountAsync();
-        var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+
+        // Nên thêm OrderBy(h => h.Id) hoặc CreatedAt để Database phân trang chính xác, không bị warning
+        var items = await query
+            .OrderByDescending(h => h.Id)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
         return new PagedResponse<HorseDto>(_mapper.Map<List<HorseDto>>(items), page, pageSize, total);
     }
 
@@ -125,7 +158,6 @@ public class HorseService : IHorseService
         _horseRepo.Remove(horse);
         await _uow.SaveChangesAsync();
     }
-
     public async Task<HorseDto> UpdateHorseStatusAsync(int id, int userId, HorseStatus status, bool isAdmin)
     {
         var horse = await _horseRepo.GetByIdAsync(id)

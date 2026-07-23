@@ -17,6 +17,12 @@ public class RegistrationsController : ControllerBase
     private readonly IRegistrationService _service;
     public RegistrationsController(IRegistrationService service) => _service = service;
 
+    [HttpGet]
+    [AuthorizeRoles(UserRole.Admin, UserRole.Referee)]
+    public async Task<ActionResult<ApiResponse<PagedResponse<RegistrationDto>>>> GetAll(
+        [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        => Ok(ApiResponse<PagedResponse<RegistrationDto>>.Ok(await _service.GetAllRegistrationsAsync(page, pageSize)));
+
     [HttpPost]
     [AuthorizeRoles(UserRole.HorseOwner)]
     public async Task<ActionResult<ApiResponse<RegistrationDto>>> Register([FromBody] CreateRegistrationDto dto)
@@ -65,4 +71,13 @@ public class RegistrationsController : ControllerBase
     public async Task<ActionResult<ApiResponse<List<RegistrationDto>>>> GetApproved(int raceId)
         => Ok(ApiResponse<List<RegistrationDto>>.Ok(
             await _service.GetApprovedRegistrationsByRaceAsync(raceId)));
+
+    [HttpGet("my-rides")]
+    [AuthorizeRoles(UserRole.Jockey)]
+    public async Task<ActionResult<ApiResponse<PagedResponse<RegistrationDto>>>> GetMyRides(
+        [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    {
+        var result = await _service.GetMyRidesAsync(User.GetUserId(), page, pageSize);
+        return Ok(ApiResponse<PagedResponse<RegistrationDto>>.Ok(result));
+    }
 }

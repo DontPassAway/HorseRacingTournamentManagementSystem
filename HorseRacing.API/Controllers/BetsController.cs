@@ -3,6 +3,7 @@ using HorseRacing.API.Filters;
 using HorseRacing.Application.DTOs.Bets;
 using HorseRacing.Application.Interfaces.Services;
 using HorseRacing.Domain.Enums;
+using HorseRacing.Infrastructure.Services;
 using HorseRacing.Shared.Wrappers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +17,15 @@ public class BetsController : ControllerBase
 {
     private readonly IBetService _service;
     public BetsController(IBetService service) => _service = service;
+
+    [HttpGet]
+    [AuthorizeRoles(UserRole.Admin, UserRole.Referee)] 
+    public async Task<ActionResult<ApiResponse<PagedResponse<BetDto>>>> GetAll(
+        [FromQuery] int page = 1, [FromQuery] int pageSize = 15)
+    {
+        var result = await _service.GetAllBetsAsync(page, pageSize);
+        return Ok(ApiResponse<PagedResponse<BetDto>>.Ok(result));
+    }
 
     [HttpPost]
     [AuthorizeRoles(UserRole.Spectator)]

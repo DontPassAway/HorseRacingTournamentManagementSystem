@@ -28,8 +28,11 @@ public class HorsesController : ControllerBase
     [HttpGet]
     [AuthorizeRoles(UserRole.Admin, UserRole.Referee)]
     public async Task<ActionResult<ApiResponse<PagedResponse<HorseDto>>>> GetAll(
-        [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
-        => Ok(ApiResponse<PagedResponse<HorseDto>>.Ok(await _horseService.GetAllHorsesAsync(page, pageSize)));
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? search = null,
+        [FromQuery] string? status = null)
+        => Ok(ApiResponse<PagedResponse<HorseDto>>.Ok(await _horseService.GetAllHorsesAsync(page, pageSize, search, status)));
 
     [HttpGet("{id:int}")]
     [AllowAnonymous]
