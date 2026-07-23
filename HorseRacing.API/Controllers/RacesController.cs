@@ -1,5 +1,11 @@
+using HorseRacing.API.Extensions;
 using HorseRacing.API.Filters;
 using HorseRacing.Application.DTOs.Races;
+using HorseRacing.Application.Interfaces.Services;
+using HorseRacing.Domain.Enums;
+using HorseRacing.Shared.Wrappers;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using HorseRacing.Application.Interfaces.Services;
 using HorseRacing.Domain.Enums;
 using HorseRacing.Shared.Wrappers;
@@ -51,6 +57,14 @@ public class RacesController : ControllerBase
         await _service.DeleteRaceAsync(id);
         return Ok(ApiResponse<object>.Ok(null!, "Race deleted."));
     }
+
+    [HttpPost("{raceId:int}/check-horse")]
+    [AuthorizeRoles(UserRole.Referee)]
+    public async Task<ActionResult<ApiResponse<HorseCheckResultDto>>> CheckHorse(
+        int raceId, [FromBody] CheckHorseDto dto)
+        => Ok(ApiResponse<HorseCheckResultDto>.Ok(
+            await _service.CheckHorseEligibilityAsync(raceId, User.GetUserId(), dto),
+            "Horse eligibility checked."));
 }
 
 public record UpdateRaceStatusDto(RaceStatus Status);

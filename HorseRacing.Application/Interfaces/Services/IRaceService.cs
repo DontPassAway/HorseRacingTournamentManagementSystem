@@ -12,4 +12,5 @@ public interface IRaceService
     Task<RaceDto> UpdateRaceAsync(int id, UpdateRaceDto dto);
     Task<RaceDto> UpdateStatusAsync(int id, RaceStatus status);
     Task DeleteRaceAsync(int id);
+    Task<HorseCheckResultDto> CheckHorseEligibilityAsync(int raceId, int refereeUserId, CheckHorseDto dto);
 }

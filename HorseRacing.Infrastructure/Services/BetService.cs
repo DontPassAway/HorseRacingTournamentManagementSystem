@@ -94,4 +94,35 @@ public class BetService : IBetService
         }
         await _uow.SaveChangesAsync();
     }
+
+    public async Task<BetOddsDto> GetOddsForRaceAsync(int raceId)
+    {
+        var race = await _raceRepo.GetByIdAsync(raceId)
+            ?? throw new NotFoundException(nameof(Race), raceId);
+
+        var bets = await BaseQuery()
+            .Where(b => b.RaceId == raceId)
+            .ToListAsync();
+
+        var total = bets.Count;
+        var grouped = bets
+            .GroupBy(b => new { b.PredictedHorseId, HorseName = b.PredictedHorse.Name })
+            .Select(g => new HorseOddsDto
+            {
+                HorseId = g.Key.PredictedHorseId,
+                HorseName = g.Key.HorseName,
+                BetCount = g.Count(),
+                Percentage = total > 0 ? Math.Round((decimal)g.Count() / total * 100, 2) : 0
+            })
+            .OrderByDescending(o => o.Percentage)
+            .ToList();
+
+        return new BetOddsDto
+        {
+            RaceId = raceId,
+            RaceName = race.Name,
+            TotalBets = total,
+            Odds = grouped
+        };
+    }
 }

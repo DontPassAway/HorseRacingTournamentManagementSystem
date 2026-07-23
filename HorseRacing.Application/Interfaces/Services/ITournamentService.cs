@@ -1,3 +1,4 @@
+using HorseRacing.Application.DTOs.Races;
 using HorseRacing.Application.DTOs.Tournaments;
 using HorseRacing.Domain.Enums;
 using HorseRacing.Shared.Wrappers;
@@ -12,4 +13,5 @@ public interface ITournamentService
     Task<TournamentDto> UpdateTournamentAsync(int id, UpdateTournamentDto dto);
     Task<TournamentDto> UpdateStatusAsync(int id, TournamentStatus status);
     Task DeleteTournamentAsync(int id);
+    Task<List<RaceDto>> GetRacesByTournamentAsync(int tournamentId);
 }

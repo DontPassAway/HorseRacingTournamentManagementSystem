@@ -1,4 +1,5 @@
 using HorseRacing.Application.DTOs.Horses;
+using HorseRacing.Domain.Enums;
 using HorseRacing.Shared.Wrappers;
 
 namespace HorseRacing.Application.Interfaces.Services;
@@ -11,4 +12,5 @@ public interface IHorseService
     Task<PagedResponse<HorseDto>> GetMyHorsesAsync(int ownerUserId, int page, int pageSize);
     Task<HorseDto> UpdateHorseAsync(int id, int ownerUserId, UpdateHorseDto dto);
     Task DeleteHorseAsync(int id, int ownerUserId);
+    Task<HorseDto> UpdateHorseStatusAsync(int id, int userId, HorseStatus status, bool isAdmin);
 }

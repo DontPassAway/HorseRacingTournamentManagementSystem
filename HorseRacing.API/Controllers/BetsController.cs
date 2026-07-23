@@ -41,4 +41,9 @@ public class BetsController : ControllerBase
         await _service.ResolveBetsForRaceAsync(raceId);
         return Ok(ApiResponse<object>.Ok(null!, "Bets resolved."));
     }
+
+    [HttpGet("odds/race/{raceId:int}")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ApiResponse<BetOddsDto>>> GetOdds(int raceId)
+        => Ok(ApiResponse<BetOddsDto>.Ok(await _service.GetOddsForRaceAsync(raceId)));
 }

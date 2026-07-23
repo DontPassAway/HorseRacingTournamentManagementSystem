@@ -151,4 +151,13 @@ public class RegistrationService : IRegistrationService
         _repo.Update(reg);
         await _uow.SaveChangesAsync();
     }
+
+    public async Task<List<RegistrationDto>> GetApprovedRegistrationsByRaceAsync(int raceId)
+    {
+        var items = await BaseQuery()
+            .Where(r => r.RaceId == raceId && r.Status == RegistrationStatus.Approved && r.JockeyConfirmed)
+            .OrderBy(r => r.LaneNumber)
+            .ToListAsync();
+        return _mapper.Map<List<RegistrationDto>>(items);
+    }
 }

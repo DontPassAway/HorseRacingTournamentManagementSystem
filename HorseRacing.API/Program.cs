@@ -33,6 +33,9 @@ builder.Services.AddScoped<IRaceResultService, RaceResultService>();
 builder.Services.AddScoped<IBetService, BetService>();
 builder.Services.AddScoped<IPrizeService, PrizeService>();
 builder.Services.AddScoped<IRefereeReportService, RefereeReportService>();
+builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IRefereeProfileService, RefereeProfileService>();
 builder.Services.AddScoped<IJockeyInvitationService, JockeyInvitationService>();
 builder.Services.AddScoped<IRaceAssignmentService, RaceAssignmentService>();
 

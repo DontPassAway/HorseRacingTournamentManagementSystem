@@ -59,4 +59,10 @@ public class RegistrationsController : ControllerBase
         await _service.WithdrawRegistrationAsync(id, User.GetUserId());
         return Ok(ApiResponse<object>.Ok(null!, "Withdrawn."));
     }
+
+    [HttpGet("approved/race/{raceId:int}")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ApiResponse<List<RegistrationDto>>>> GetApproved(int raceId)
+        => Ok(ApiResponse<List<RegistrationDto>>.Ok(
+            await _service.GetApprovedRegistrationsByRaceAsync(raceId)));
 }

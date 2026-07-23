@@ -1,5 +1,6 @@
 using HorseRacing.API.Extensions;
 using HorseRacing.API.Filters;
+using HorseRacing.Application.DTOs.Races;
 using HorseRacing.Application.DTOs.Tournaments;
 using HorseRacing.Application.Interfaces.Services;
 using HorseRacing.Domain.Enums;
@@ -52,6 +53,11 @@ public class TournamentsController : ControllerBase
         await _service.DeleteTournamentAsync(id);
         return Ok(ApiResponse<object>.Ok(null!, "Tournament deleted."));
     }
+
+    [HttpGet("{id:int}/races")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ApiResponse<List<RaceDto>>>> GetRaces(int id)
+        => Ok(ApiResponse<List<RaceDto>>.Ok(await _service.GetRacesByTournamentAsync(id)));
 }
 
 public record UpdateStatusDto(TournamentStatus Status);

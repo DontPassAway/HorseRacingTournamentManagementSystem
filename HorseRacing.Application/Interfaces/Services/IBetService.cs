@@ -9,4 +9,5 @@ public interface IBetService
     Task<PagedResponse<BetDto>> GetMyBetsAsync(int spectatorUserId, int page, int pageSize);
     Task<PagedResponse<BetDto>> GetBetsByRaceAsync(int raceId, int page, int pageSize);
     Task ResolveBetsForRaceAsync(int raceId);
+    Task<BetOddsDto> GetOddsForRaceAsync(int raceId);
 }

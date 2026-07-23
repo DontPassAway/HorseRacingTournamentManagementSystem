@@ -1,4 +1,5 @@
 using AutoMapper;
+using HorseRacing.Application.DTOs.Races;
 using HorseRacing.Application.DTOs.Tournaments;
 using HorseRacing.Application.Interfaces.Repositories;
 using HorseRacing.Application.Interfaces.Services;
@@ -94,5 +95,18 @@ public class TournamentService : ITournamentService
         var t = await _repo.GetByIdAsync(id) ?? throw new NotFoundException(nameof(Tournament), id);
         _repo.Remove(t);
         await _uow.SaveChangesAsync();
+    }
+
+    public async Task<List<RaceDto>> GetRacesByTournamentAsync(int tournamentId)
+    {
+        var tournament = await _repo.Query()
+            .Include(t => t.Races).ThenInclude(r => r.Registrations)
+            .FirstOrDefaultAsync(t => t.Id == tournamentId)
+            ?? throw new NotFoundException(nameof(Tournament), tournamentId);
+
+        var races = tournament.Races.OrderBy(r => r.RoundNumber).ThenBy(r => r.ScheduledAt).ToList();
+        // Manually assign Tournament navigation for mapping
+        foreach (var race in races) race.Tournament = tournament;
+        return _mapper.Map<List<RaceDto>>(races);
     }
 }

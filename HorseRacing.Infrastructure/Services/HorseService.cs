@@ -3,6 +3,7 @@ using HorseRacing.Application.DTOs.Horses;
 using HorseRacing.Application.Interfaces.Repositories;
 using HorseRacing.Application.Interfaces.Services;
 using HorseRacing.Domain.Entities;
+using HorseRacing.Domain.Enums;
 using HorseRacing.Domain.Exceptions;
 using HorseRacing.Shared.Wrappers;
 using Microsoft.EntityFrameworkCore;
@@ -123,5 +124,25 @@ public class HorseService : IHorseService
 
         _horseRepo.Remove(horse);
         await _uow.SaveChangesAsync();
+    }
+
+    public async Task<HorseDto> UpdateHorseStatusAsync(int id, int userId, HorseStatus status, bool isAdmin)
+    {
+        var horse = await _horseRepo.GetByIdAsync(id)
+            ?? throw new NotFoundException(nameof(Horse), id);
+
+        if (!isAdmin)
+        {
+            var owner = await _ownerRepo.FirstOrDefaultAsync(o => o.UserId == userId)
+                ?? throw new NotFoundException(nameof(HorseOwner), userId);
+            if (horse.HorseOwnerId != owner.Id)
+                throw new ForbiddenException("You do not own this horse.");
+        }
+
+        horse.Status = status;
+        horse.UpdatedAt = DateTime.UtcNow;
+        _horseRepo.Update(horse);
+        await _uow.SaveChangesAsync();
+        return await GetHorseByIdAsync(id);
     }
 }

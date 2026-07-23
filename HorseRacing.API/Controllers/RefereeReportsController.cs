@@ -31,4 +31,10 @@ public class RefereeReportsController : ControllerBase
     [AuthorizeRoles(UserRole.Referee)]
     public async Task<ActionResult<ApiResponse<RefereeReportDto>>> Update(int id, [FromBody] UpdateRefereeReportDto dto)
         => Ok(ApiResponse<RefereeReportDto>.Ok(await _service.UpdateReportAsync(id, User.GetUserId(), dto)));
+
+    [HttpPost("{id:int}/penalties")]
+    [AuthorizeRoles(UserRole.Referee)]
+    public async Task<ActionResult<ApiResponse<PenaltyResultDto>>> ApplyPenalty(int id, [FromBody] CreatePenaltyDto dto)
+        => Ok(ApiResponse<PenaltyResultDto>.Ok(
+            await _service.ApplyPenaltyAsync(id, User.GetUserId(), dto), "Penalty applied."));
 }

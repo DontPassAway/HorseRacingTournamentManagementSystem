@@ -24,3 +24,19 @@ public class BetDto
     public DateTime PlacedAt { get; set; }
     public DateTime? ResolvedAt { get; set; }
 }
+
+public class HorseOddsDto
+{
+    public int HorseId { get; set; }
+    public string HorseName { get; set; } = string.Empty;
+    public int BetCount { get; set; }
+    public decimal Percentage { get; set; }
+}
+
+public class BetOddsDto
+{
+    public int RaceId { get; set; }
+    public string RaceName { get; set; } = string.Empty;
+    public int TotalBets { get; set; }
+    public List<HorseOddsDto> Odds { get; set; } = new();
+}

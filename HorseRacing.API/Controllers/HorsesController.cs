@@ -54,4 +54,15 @@ public class HorsesController : ControllerBase
         await _horseService.DeleteHorseAsync(id, User.GetUserId());
         return Ok(ApiResponse<object>.Ok(null!, "Horse deleted."));
     }
+
+    [HttpPut("{id:int}/status")]
+    [AuthorizeRoles(UserRole.HorseOwner, UserRole.Admin)]
+    public async Task<ActionResult<ApiResponse<HorseDto>>> UpdateStatus(int id, [FromBody] UpdateHorseStatusDto dto)
+    {
+        var isAdmin = User.IsInRole(((int)UserRole.Admin).ToString());
+        var result = await _horseService.UpdateHorseStatusAsync(id, User.GetUserId(), dto.Status, isAdmin);
+        return Ok(ApiResponse<HorseDto>.Ok(result));
+    }
 }
+
+public record UpdateHorseStatusDto(HorseStatus Status);

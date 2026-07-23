@@ -14,14 +14,19 @@ public class RaceService : IRaceService
 {
     private readonly IGenericRepository<Race> _repo;
     private readonly IGenericRepository<Tournament> _tournamentRepo;
+    private readonly IGenericRepository<Registration> _registrationRepo;
+    private readonly IGenericRepository<User> _userRepo;
     private readonly IUnitOfWork _uow;
     private readonly IMapper _mapper;
 
     public RaceService(IGenericRepository<Race> repo, IGenericRepository<Tournament> tournamentRepo,
+        IGenericRepository<Registration> registrationRepo, IGenericRepository<User> userRepo,
         IUnitOfWork uow, IMapper mapper)
     {
         _repo = repo;
         _tournamentRepo = tournamentRepo;
+        _registrationRepo = registrationRepo;
+        _userRepo = userRepo;
         _uow = uow;
         _mapper = mapper;
     }
@@ -102,5 +107,37 @@ public class RaceService : IRaceService
         var race = await _repo.GetByIdAsync(id) ?? throw new NotFoundException(nameof(Race), id);
         _repo.Remove(race);
         await _uow.SaveChangesAsync();
+    }
+
+    public async Task<HorseCheckResultDto> CheckHorseEligibilityAsync(int raceId, int refereeUserId, CheckHorseDto dto)
+    {
+        var race = await _repo.Query()
+            .Include(r => r.Tournament)
+            .FirstOrDefaultAsync(r => r.Id == raceId)
+            ?? throw new NotFoundException(nameof(Race), raceId);
+
+        var registration = await _registrationRepo.Query()
+            .Include(r => r.Horse)
+            .Include(r => r.Jockey).ThenInclude(j => j!.User)
+            .FirstOrDefaultAsync(r => r.Id == dto.RegistrationId && r.RaceId == raceId)
+            ?? throw new NotFoundException(nameof(Registration), dto.RegistrationId);
+
+        var referee = await _userRepo.GetByIdAsync(refereeUserId)
+            ?? throw new NotFoundException(nameof(User), refereeUserId);
+
+        return new HorseCheckResultDto
+        {
+            RegistrationId = registration.Id,
+            RaceId = race.Id,
+            RaceName = race.Name,
+            HorseId = registration.Horse.Id,
+            HorseName = registration.Horse.Name,
+            JockeyName = registration.Jockey?.User?.FullName,
+            IsEligible = dto.IsEligible,
+            CheckedWeight = dto.CheckedWeight,
+            Notes = dto.Notes,
+            CheckedAt = DateTime.UtcNow,
+            CheckedByReferee = referee.FullName
+        };
     }
 }

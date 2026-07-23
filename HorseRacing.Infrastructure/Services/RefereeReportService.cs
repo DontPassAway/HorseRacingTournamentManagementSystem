@@ -11,12 +11,17 @@ namespace HorseRacing.Infrastructure.Services;
 public class RefereeReportService : IRefereeReportService
 {
     private readonly IGenericRepository<RefereeReport> _repo;
+    private readonly IGenericRepository<Registration> _regRepo;
+    private readonly IGenericRepository<RaceResult> _resultRepo;
     private readonly IUnitOfWork _uow;
     private readonly IMapper _mapper;
 
-    public RefereeReportService(IGenericRepository<RefereeReport> repo, IUnitOfWork uow, IMapper mapper)
+    public RefereeReportService(IGenericRepository<RefereeReport> repo,
+        IGenericRepository<Registration> regRepo,
+        IGenericRepository<RaceResult> resultRepo,
+        IUnitOfWork uow, IMapper mapper)
     {
-        _repo = repo; _uow = uow; _mapper = mapper;
+        _repo = repo; _regRepo = regRepo; _resultRepo = resultRepo; _uow = uow; _mapper = mapper;
     }
 
     private IQueryable<RefereeReport> BaseQuery() => _repo.Query()
@@ -53,5 +58,48 @@ public class RefereeReportService : IRefereeReportService
         _repo.Update(report); await _uow.SaveChangesAsync();
         var updated = await BaseQuery().FirstOrDefaultAsync(r => r.Id == id);
         return _mapper.Map<RefereeReportDto>(updated!);
+    }
+
+    public async Task<PenaltyResultDto> ApplyPenaltyAsync(int reportId, int refereeUserId, CreatePenaltyDto dto)
+    {
+        var report = await _repo.GetByIdAsync(reportId)
+            ?? throw new NotFoundException(nameof(RefereeReport), reportId);
+
+        if (report.RefereeUserId != refereeUserId)
+            throw new ForbiddenException("Only the assigned referee can apply penalties.");
+
+        var registration = await _regRepo.Query()
+            .Include(r => r.Horse)
+            .Include(r => r.Jockey).ThenInclude(j => j!.User)
+            .FirstOrDefaultAsync(r => r.Id == dto.RegistrationId)
+            ?? throw new NotFoundException(nameof(Registration), dto.RegistrationId);
+
+        bool disqualified = dto.PenaltyType.Equals("Disqualified", StringComparison.OrdinalIgnoreCase);
+
+        if (disqualified)
+        {
+            var result = await _resultRepo.FirstOrDefaultAsync(rr => rr.RegistrationId == dto.RegistrationId);
+            if (result != null)
+            {
+                result.Disqualified = true;
+                result.DisqualificationReason = dto.Reason;
+                result.UpdatedAt = DateTime.UtcNow;
+                _resultRepo.Update(result);
+            }
+        }
+
+        await _uow.SaveChangesAsync();
+
+        return new PenaltyResultDto
+        {
+            ReportId = reportId,
+            RegistrationId = dto.RegistrationId,
+            HorseName = registration.Horse.Name,
+            JockeyName = registration.Jockey?.User?.FullName,
+            PenaltyType = dto.PenaltyType,
+            Reason = dto.Reason,
+            HorseDisqualified = disqualified,
+            AppliedAt = DateTime.UtcNow
+        };
     }
 }
