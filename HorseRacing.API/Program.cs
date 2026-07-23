@@ -38,6 +38,7 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IRefereeProfileService, RefereeProfileService>();
 builder.Services.AddScoped<IJockeyInvitationService, JockeyInvitationService>();
 builder.Services.AddScoped<IRaceAssignmentService, RaceAssignmentService>();
+builder.Services.AddScoped<IJockeyProfileService, JockeyProfileService>();
 
 // ── AutoMapper ────────────────────────────────────────────────────────────────
 builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());

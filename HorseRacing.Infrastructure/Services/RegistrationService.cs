@@ -155,9 +155,10 @@ public class RegistrationService : IRegistrationService
     public async Task<List<RegistrationDto>> GetApprovedRegistrationsByRaceAsync(int raceId)
     {
         var items = await BaseQuery()
-            .Where(r => r.RaceId == raceId && r.Status == RegistrationStatus.Approved && r.JockeyConfirmed)
+            .Where(r => r.RaceId == raceId && r.Status == RegistrationStatus.Approved) 
             .OrderBy(r => r.LaneNumber)
             .ToListAsync();
+
         return _mapper.Map<List<RegistrationDto>>(items);
     }
 

@@ -56,7 +56,9 @@ public class JockeyInvitationService : IJockeyInvitationService
             HorseOwnerId = owner.Id,
             JockeyId = jockey.Id,
             RaceId = dto.RaceId,
-            Message = dto.Message
+            Message = dto.Message,
+            Status = JockeyInvitationStatus.Pending, 
+            InvitedAt = DateTime.UtcNow
         };
 
         await _repo.AddAsync(invitation);

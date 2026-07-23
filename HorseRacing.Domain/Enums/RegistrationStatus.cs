@@ -2,8 +2,8 @@ namespace HorseRacing.Domain.Enums;
 
 public enum RegistrationStatus
 {
-    Pending = 1,
-    Approved = 2,
-    Rejected = 3,
-    Withdrawn = 4
+    Pending = 0,   
+    Approved = 1,  
+    Rejected = 2,
+    Withdrawn = 3
 }
