@@ -7,8 +7,11 @@ public class Bet
     public int Id { get; set; }
     public int SpectatorUserId { get; set; }
     public int RaceId { get; set; }
-    public int PredictedHorseId { get; set; } // predicted winning horse
-    public int PredictedPosition { get; set; } // predicted finishing position (1st, 2nd, etc.)
+    public int PredictedHorseId { get; set; }       // con ngựa dự đoán thắng
+    public int PredictedPosition { get; set; }       // vị trí dự đoán về đích
+    public decimal Amount { get; set; } = 0m;        // số tiền đặt cược
+    public decimal OddsMultiplier { get; set; } = 1m; // hệ số nhân tại thời điểm đặt (snapshot)
+    public decimal? Payout { get; set; }             // tiền thắng thực tế (null = chưa resolve)
     public BetStatus Status { get; set; } = BetStatus.Pending;
     public string? Notes { get; set; }
     public DateTime PlacedAt { get; set; } = DateTime.UtcNow;

@@ -34,15 +34,29 @@ public class BetService : IBetService
 
     public async Task<BetDto> PlaceBetAsync(int spectatorUserId, CreateBetDto dto)
     {
+        if (dto.Amount <= 0)
+            throw new BusinessException("Bet amount must be greater than 0.");
+
         var race = await _raceRepo.GetByIdAsync(dto.RaceId) ?? throw new NotFoundException(nameof(Race), dto.RaceId);
         if (race.Status != RaceStatus.Scheduled)
             throw new BusinessException("Bets can only be placed on scheduled races.");
 
-        var horse = await _horseRepo.GetByIdAsync(dto.PredictedHorseId)
+        _ = await _horseRepo.GetByIdAsync(dto.PredictedHorseId)
             ?? throw new NotFoundException(nameof(Horse), dto.PredictedHorseId);
 
         var existing = await _repo.FirstOrDefaultAsync(b => b.SpectatorUserId == spectatorUserId && b.RaceId == dto.RaceId);
         if (existing != null) throw new BusinessException("You already placed a bet on this race.");
+
+        // Tính OddsMultiplier tại thời điểm đặt dựa trên pool tiền hiện tại
+        // Odds = TotalPool / TotalAmountOnThisHorse (tối thiểu 1.1x)
+        var existingBetsOnRace = await _repo.FindAsync(b => b.RaceId == dto.RaceId);
+        var totalPool = existingBetsOnRace.Sum(b => b.Amount) + dto.Amount;
+        var amountOnHorse = existingBetsOnRace
+            .Where(b => b.PredictedHorseId == dto.PredictedHorseId)
+            .Sum(b => b.Amount) + dto.Amount;
+        var oddsMultiplier = amountOnHorse > 0
+            ? Math.Max(1.1m, Math.Round(totalPool / amountOnHorse, 2))
+            : 1.5m;
 
         var bet = new Bet
         {
@@ -50,6 +64,8 @@ public class BetService : IBetService
             RaceId = dto.RaceId,
             PredictedHorseId = dto.PredictedHorseId,
             PredictedPosition = dto.PredictedPosition,
+            Amount = dto.Amount,
+            OddsMultiplier = oddsMultiplier,
             Notes = dto.Notes
         };
 
@@ -92,16 +108,31 @@ public class BetService : IBetService
     public async Task ResolveBetsForRaceAsync(int raceId)
     {
         var bets = await _repo.FindAsync(b => b.RaceId == raceId && b.Status == BetStatus.Pending);
-        var results = await _resultRepo.FindAsync(r => r.RaceId == raceId && r.IsConfirmed);
+        var results = await _resultRepo.Query()
+            .Include(r => r.Registration)
+            .Where(r => r.RaceId == raceId && r.IsConfirmed)
+            .ToListAsync();
 
         foreach (var bet in bets)
         {
+            // Kiểm tra ngựa đoán thắng có về đúng vị trí không (và không bị disqualified)
             var matchingResult = results.FirstOrDefault(r =>
                 r.Registration.HorseId == bet.PredictedHorseId &&
                 r.Position == bet.PredictedPosition &&
                 !r.Disqualified);
 
-            bet.Status = matchingResult != null ? BetStatus.Won : BetStatus.Lost;
+            if (matchingResult != null)
+            {
+                bet.Status = BetStatus.Won;
+                // Tiền thắng = Số tiền đặt × Hệ số nhân lúc đặt
+                bet.Payout = Math.Round(bet.Amount * bet.OddsMultiplier, 2);
+            }
+            else
+            {
+                bet.Status = BetStatus.Lost;
+                bet.Payout = 0m;
+            }
+
             bet.ResolvedAt = DateTime.UtcNow;
             _repo.Update(bet);
         }
@@ -117,25 +148,98 @@ public class BetService : IBetService
             .Where(b => b.RaceId == raceId)
             .ToListAsync();
 
-        var total = bets.Count;
+        var totalBets = bets.Count;
+        var totalPool = bets.Sum(b => b.Amount);
+
         var grouped = bets
             .GroupBy(b => new { b.PredictedHorseId, HorseName = b.PredictedHorse.Name })
-            .Select(g => new HorseOddsDto
+            .Select(g =>
             {
-                HorseId = g.Key.PredictedHorseId,
-                HorseName = g.Key.HorseName,
-                BetCount = g.Count(),
-                Percentage = total > 0 ? Math.Round((decimal)g.Count() / total * 100, 2) : 0
+                var horsePool = g.Sum(b => b.Amount);
+                var odds = horsePool > 0
+                    ? Math.Max(1.1m, Math.Round(totalPool / horsePool, 2))
+                    : 0m;
+                return new HorseOddsDto
+                {
+                    HorseId = g.Key.PredictedHorseId,
+                    HorseName = g.Key.HorseName,
+                    BetCount = g.Count(),
+                    TotalAmountBet = horsePool,
+                    Percentage = totalPool > 0 ? Math.Round(horsePool / totalPool * 100, 2) : 0,
+                    OddsMultiplier = odds
+                };
             })
-            .OrderByDescending(o => o.Percentage)
+            .OrderByDescending(o => o.TotalAmountBet)
             .ToList();
 
         return new BetOddsDto
         {
             RaceId = raceId,
             RaceName = race.Name,
-            TotalBets = total,
+            TotalBets = totalBets,
+            TotalPoolAmount = totalPool,
             Odds = grouped
         };
+    }
+
+    public async Task<BetSummaryDto> GetMySummaryAsync(int spectatorUserId)
+    {
+        var betsEnum = await _repo.FindAsync(b => b.SpectatorUserId == spectatorUserId);
+        var bets = betsEnum.ToList();
+
+        var totalWon    = bets.Count(b => b.Status == BetStatus.Won);
+        var totalLost   = bets.Count(b => b.Status == BetStatus.Lost);
+        var totalPend   = bets.Count(b => b.Status == BetStatus.Pending);
+        var totalAmount = bets.Sum(b => b.Amount);
+        var totalPayout = bets.Sum(b => b.Payout ?? 0m);
+        var winRate     = bets.Count > 0
+            ? Math.Round((decimal)totalWon / bets.Count * 100, 2)
+            : 0m;
+
+        return new BetSummaryDto
+        {
+            TotalBets      = bets.Count,
+            TotalWon       = totalWon,
+            TotalLost      = totalLost,
+            TotalPending   = totalPend,
+            TotalAmountBet = totalAmount,
+            TotalPayout    = totalPayout,
+            NetProfit      = totalPayout - totalAmount,
+            WinRate        = winRate
+        };
+    }
+
+    public async Task<List<BetLeaderboardEntryDto>> GetBettingLeaderboardAsync(int top = 10)
+    {
+        var allBets = await BaseQuery()
+            .Where(b => b.Status == BetStatus.Won || b.Status == BetStatus.Lost)
+            .ToListAsync();
+
+        var grouped = allBets
+            .GroupBy(b => new { b.SpectatorUserId, SpectatorName = b.SpectatorUser.FullName })
+            .Select(g => new
+            {
+                g.Key.SpectatorUserId,
+                g.Key.SpectatorName,
+                TotalBets      = g.Count(),
+                TotalWins      = g.Count(b => b.Status == BetStatus.Won),
+                TotalAmountBet = g.Sum(b => b.Amount),
+                TotalPayout    = g.Sum(b => b.Payout ?? 0m)
+            })
+            .OrderByDescending(x => x.TotalPayout - x.TotalAmountBet)
+            .Take(top)
+            .ToList();
+
+        return grouped.Select((x, i) => new BetLeaderboardEntryDto
+        {
+            Rank            = i + 1,
+            SpectatorUserId = x.SpectatorUserId,
+            SpectatorName   = x.SpectatorName,
+            TotalBets       = x.TotalBets,
+            TotalWins       = x.TotalWins,
+            TotalAmountBet  = x.TotalAmountBet,
+            TotalPayout     = x.TotalPayout,
+            NetProfit       = x.TotalPayout - x.TotalAmountBet
+        }).ToList();
     }
 }

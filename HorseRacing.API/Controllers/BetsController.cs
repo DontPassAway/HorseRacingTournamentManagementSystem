@@ -56,4 +56,18 @@ public class BetsController : ControllerBase
     [AllowAnonymous]
     public async Task<ActionResult<ApiResponse<BetOddsDto>>> GetOdds(int raceId)
         => Ok(ApiResponse<BetOddsDto>.Ok(await _service.GetOddsForRaceAsync(raceId)));
+
+    /// <summary>Tổng kết thắng/thua và lợi nhuận của tôi</summary>
+    [HttpGet("my-summary")]
+    [AuthorizeRoles(UserRole.Spectator)]
+    public async Task<ActionResult<ApiResponse<BetSummaryDto>>> GetMySummary()
+        => Ok(ApiResponse<BetSummaryDto>.Ok(await _service.GetMySummaryAsync(User.GetUserId())));
+
+    /// <summary>Bảng xếp hạng top người thắng cược</summary>
+    [HttpGet("leaderboard")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ApiResponse<List<BetLeaderboardEntryDto>>>> GetLeaderboard(
+        [FromQuery] int top = 10)
+        => Ok(ApiResponse<List<BetLeaderboardEntryDto>>.Ok(
+            await _service.GetBettingLeaderboardAsync(top)));
 }

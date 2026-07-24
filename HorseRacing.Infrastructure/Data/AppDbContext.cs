@@ -25,5 +25,13 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+
+        // Cấu hình precision cho các cột decimal trong Bet
+        modelBuilder.Entity<Bet>(b =>
+        {
+            b.Property(x => x.Amount).HasPrecision(18, 2);
+            b.Property(x => x.OddsMultiplier).HasPrecision(18, 4);
+            b.Property(x => x.Payout).HasPrecision(18, 2);
+        });
     }
 }
