@@ -9,4 +9,5 @@ public interface IRaceResultService
     Task<List<RaceResultDto>> GetResultsByRaceAsync(int raceId);
     Task<RaceResultDto> UpdateResultAsync(int id, UpdateRaceResultDto dto);
     Task<RaceResultDto> ConfirmResultAsync(int id, int confirmedByUserId);
+    Task<List<RaceResultDto>> SimulateRaceAsync(int raceId, int adminUserId);
 }

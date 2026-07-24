@@ -1,4 +1,4 @@
-using HorseRacing.API.Extensions;
+﻿using HorseRacing.API.Extensions;
 using HorseRacing.API.Filters;
 using HorseRacing.Application.DTOs.Registrations;
 using HorseRacing.Application.Interfaces.Services;
@@ -64,20 +64,5 @@ public class RegistrationsController : ControllerBase
     {
         await _service.WithdrawRegistrationAsync(id, User.GetUserId());
         return Ok(ApiResponse<object>.Ok(null!, "Withdrawn."));
-    }
-
-    [HttpGet("approved/race/{raceId:int}")]
-    [AllowAnonymous]
-    public async Task<ActionResult<ApiResponse<List<RegistrationDto>>>> GetApproved(int raceId)
-        => Ok(ApiResponse<List<RegistrationDto>>.Ok(
-            await _service.GetApprovedRegistrationsByRaceAsync(raceId)));
-
-    [HttpGet("my-rides")]
-    [AuthorizeRoles(UserRole.Jockey)]
-    public async Task<ActionResult<ApiResponse<PagedResponse<RegistrationDto>>>> GetMyRides(
-        [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
-    {
-        var result = await _service.GetMyRidesAsync(User.GetUserId(), page, pageSize);
-        return Ok(ApiResponse<PagedResponse<RegistrationDto>>.Ok(result));
     }
 }

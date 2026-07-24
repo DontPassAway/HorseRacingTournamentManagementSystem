@@ -36,4 +36,15 @@ public class RaceResultsController : ControllerBase
     [AuthorizeRoles(UserRole.Admin, UserRole.Referee)]
     public async Task<ActionResult<ApiResponse<RaceResultDto>>> Confirm(int id)
         => Ok(ApiResponse<RaceResultDto>.Ok(await _service.ConfirmResultAsync(id, User.GetUserId())));
+
+    /// <summary>
+    /// Simulate a race: randomly pick finishing order for all approved registrations,
+    /// mark race as Completed, update Horse/Jockey stats, and resolve bets.
+    /// </summary>
+    [HttpPost("race/{raceId:int}/simulate")]
+    [AuthorizeRoles(UserRole.Admin)]
+    public async Task<ActionResult<ApiResponse<List<RaceResultDto>>>> Simulate(int raceId)
+        => Ok(ApiResponse<List<RaceResultDto>>.Ok(
+            await _service.SimulateRaceAsync(raceId, User.GetUserId()),
+            "Race simulated successfully!"));
 }
